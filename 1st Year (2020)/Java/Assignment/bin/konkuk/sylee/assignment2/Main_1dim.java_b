@@ -1,0 +1,163 @@
+package konkuk.sylee.assignment2;
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class Main {
+
+  public static Scanner sc = new Scanner(System.in);
+  static int[][] bingofield;
+  static int[] num_addr = new int[26]; // 숫자 위치 num_addr[7] : '7' 이 있는 위치
+  static int[] num_status = new int[26]; // 숫자 상태 1:user 2:com
+  static boolean ongoing = true; // 게임 진행 상태
+  static boolean user_turn = true; // 순서
+  static int count =0;
+
+  public static void main(String[] args) {
+    System.out.println("202011339 이승윤"); //학번 출력
+    bingofield = initbingo(); // 빙고판 생성
+    printBingo(bingofield);  // 빙고판 출력
+    while (ongoing) {
+      if(count<25) {
+        if (user_turn) {
+          userturn();
+        } else {
+          comturn();
+        }
+      } else{
+        System.out.println("모든 숫자가 선택되었지만 빙고가 없어 게임을 종료합니다.");
+        break;
+      }
+    }
+  }
+
+  /**
+   * 유저의 턴
+   * 유저의 입력을 받아 칸에 표시 후 빙고 여부를 체크
+   * 빙고인 경우 승리를 출력 후 게임을 종료
+   */
+  public static void userturn() {
+    int user;
+    while (true) {
+      System.out.print("숫자를 선택하세요 (User) : ");
+      user = sc.nextInt();
+      if (num_status[num_addr[user]] == 0) {
+        break;
+      }
+      System.out.println("이미 선택된 숫자입니다.");
+    }
+    num_status[num_addr[user]] = 1;
+    user_turn = false;
+    count++;
+    printBingo(bingofield);  // 빙고판 출력
+    if(checkBingo(1)){
+      System.out.println("유저승리");
+    }
+
+  }
+
+  /**
+   * 컴퓨터의 턴
+   * 랜덤한 수를 칸에 표시 후 빙고 여부를 체크
+   * 빙고인 경우 승리를 출력 후 게임을 종료
+   */
+  public static void comturn() {
+    Random r = new Random();
+    int i;
+    while (true) {
+      i = r.nextInt(25) + 1;
+      if (num_status[num_addr[i]] == 0) {
+        break;
+      }
+    }
+    System.out.println("컴퓨터는 " + i + "을 선택했습니다.");
+    num_status[num_addr[i]] = 2;
+    user_turn = true;
+    count++;
+    printBingo(bingofield);  // 빙고판 출력
+    if(checkBingo(2)){
+      System.out.println("컴퓨터 승리");
+    }
+  }
+
+  /**
+   * k에 따른 빙고 여부 체크 1:User, 2:Com
+   * @param k
+   */
+  public static boolean checkBingo(int k){
+    for (int i = 0; i < 5; i++) {
+      if (num_status[1 + 5 * i] == k && num_status[2 + 5 * i] == k && num_status[3 + 5 * i] == k
+          && num_status[4 + 5 * i] == k && num_status[5 + 5 * i] == k) {
+        ongoing = false;
+        return true;
+      } else if (num_status[1 + i] == k && num_status[6 + i] == k && num_status[11 + i] == k
+          && num_status[16 + i] == k && num_status[21 + i] == k) {
+        ongoing = false;
+        return true;
+      } else if (num_status[1] == k && num_status[7] == k && num_status[13] == k
+          && num_status[19] == k && num_status[25] == k) {
+        ongoing = false;
+        return true;
+      } else if (num_status[5] == k && num_status[9] == k && num_status[13] == k
+          && num_status[17] == k && num_status[21] == k) {
+        ongoing = false;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 1~25의 숫자를 랜덤한 위치에 배열한 5*5의 2차원 배열을 리턴
+   *
+   * @return 5*5 2차원 배열
+   */
+  public static int[][] initbingo() {
+    int[][] arr = new int[5][5];
+    int[] ranarr = new int[25];
+    Random r = new Random();
+    // 무작위로 1~25 숫자 나열
+    for (int i = 0; i < 25; i++) {
+      ranarr[i] = r.nextInt(25) + 1;
+      for (int j = 0; j < i; j++) {
+        if (ranarr[i] == ranarr[j]) {
+          i--;
+          break;
+        }
+      }
+    }
+    // 5*5 배열로 복사
+    for (int i = 0; i < 5; i++) {
+      System.arraycopy(ranarr, 0 + 5 * i, arr[i], 0, 5);
+    }
+    // 숫자들 위치 기록
+    num_addr[0] = -1;
+    for (int i = 0; i < 25; i++) {
+      num_addr[ranarr[i]] = i;
+    }
+    return arr;
+  }
+
+  /**
+   * 중첩 for 문을 통한 2차원 배열의 출력 빙고 게임 진행에 따라 User와 Com의 상황을 고려하여 출력함
+   *
+   * @param arr
+   */
+  public static void printBingo(int[][] arr) {
+    System.out.println("===============");
+    for (int[] a : arr) {
+      for (int i : a) {
+        if (num_status[num_addr[i]] == 1) {
+          System.out.print(" U ");
+        } else if (num_status[num_addr[i]] == 2) {
+          System.out.print(" C ");
+        } else {
+          System.out.printf("%2d ", i);
+        }
+      }
+      System.out.println();
+    }
+    System.out.println("===============");
+  }
+
+}
